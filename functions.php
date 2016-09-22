@@ -1,6 +1,6 @@
 <?php
 // TGM Plugin
-require_once(get_template_directory().'/assets/inc/tgm/class-tgm-plugin-activation.php');
+require_once(get_template_directory().'/assets/inc/tgm/tgm-activate.php');
 
 // Theme support options
 require_once(get_template_directory().'/assets/functions/theme-support.php'); 
