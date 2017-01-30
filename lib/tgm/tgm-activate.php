@@ -65,7 +65,7 @@ function opus_register_required_plugins() {
 		array(
 			'name'               => 'Advanced Custom Fields', // The plugin name.
 			'slug'               => 'advanced-custom-fields', // The plugin slug (typically the folder name).
-			'source'             => get_template_directory() . '/assets/lib/plugins/advanced-custom-fields-pro.zip', // The plugin source.
+			'source'             => get_template_directory() . '/lib/plugins/advanced-custom-fields-pro.zip', // The plugin source.
 			'required'           => false, // If false, the plugin is only 'recommended' instead of required.
 			'version'            => '5.0.0', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
@@ -78,7 +78,7 @@ function opus_register_required_plugins() {
 		array(
 			'name'               => 'Admin Columns Pro', // The plugin name.
 			'slug'               => 'admin-columns-pro', // The plugin slug (typically the folder name).
-			'source'             => get_template_directory() . '/assets/lib/plugins/admin-columns-pro-3-8-7.zip', // The plugin source.
+			'source'             => get_template_directory() . '/lib/plugins/admin-columns-pro-3-8-7.zip', // The plugin source.
 			'required'           => false, // If false, the plugin is only 'recommended' instead of required.
 			'version'            => '3.0.0', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
@@ -88,7 +88,7 @@ function opus_register_required_plugins() {
 		array(
 			'name'               => 'Admin Columns ACF Addon', // The plugin name.
 			'slug'               => 'cac-addon-acf', // The plugin slug (typically the folder name).
-			'source'             => get_template_directory() . '/assets/lib/plugins/cac-addon-acf-1-3-5-2.zip', // The plugin source.
+			'source'             => get_template_directory() . '/lib/plugins/cac-addon-acf-1-3-5-2.zip', // The plugin source.
 			'required'           => false, // If false, the plugin is only 'recommended' instead of required.
 			'version'            => '1.0.0', // E.g. 1.0.0. If set, the active plugin must be this version or higher. If the plugin version is higher than the plugin version installed, the user will be notified to update the plugin.
 			'force_activation'   => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
@@ -99,7 +99,7 @@ function opus_register_required_plugins() {
 		array(
 			'name'         => 'Gravity Forms', // The plugin name.
 			'slug'         => 'gravity-forms', // The plugin slug (typically the folder name).
-			'source'       =>  get_template_directory() . '/assets/lib/plugins/gravityforms_2.0.7.4.zip', // The plugin source.
+			'source'       =>  get_template_directory() . '/lib/plugins/gravityforms_2.0.7.4.zip', // The plugin source.
 			'required'     => false, // If false, the plugin is only 'recommended' instead of required.
 			'external_url' => '', // If set, overrides default API URL and points to an external URL.
 		),
