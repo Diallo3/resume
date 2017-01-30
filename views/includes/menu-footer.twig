@@ -1,0 +1,8 @@
+{# menu footer #}
+{% if footer %}
+	<ul class="footer-nav">
+	{% for item in footer %}
+	    <li class="item"><a class="nav-link" href="{{item.get_path}}">{{item.title}}</a>
+	{% endfor %}
+	</ul>
+{% endif %}

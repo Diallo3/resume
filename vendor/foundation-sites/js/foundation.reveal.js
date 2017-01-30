@@ -29,8 +29,6 @@ class Reveal {
       'ENTER': 'open',
       'SPACE': 'open',
       'ESCAPE': 'close',
-      'TAB': 'tab_forward',
-      'SHIFT_TAB': 'tab_backward'
     });
   }
 
@@ -42,23 +40,14 @@ class Reveal {
     this.id = this.$element.attr('id');
     this.isActive = false;
     this.cached = {mq: Foundation.MediaQuery.current};
-    this.isiOS = iPhoneSniff();
-
-    if(this.isiOS){ this.$element.addClass('is-ios'); }
+    this.isMobile = mobileSniff();
 
     this.$anchor = $(`[data-open="${this.id}"]`).length ? $(`[data-open="${this.id}"]`) : $(`[data-toggle="${this.id}"]`);
-
-    if (this.$anchor.length) {
-      var anchorId = this.$anchor[0].id || Foundation.GetYoDigits(6, 'reveal');
-
-      this.$anchor.attr({
-        'aria-controls': this.id,
-        'id': anchorId,
-        'aria-haspopup': true,
-        'tabindex': 0
-      });
-      this.$element.attr({'aria-labelledby': anchorId});
-    }
+    this.$anchor.attr({
+      'aria-controls': this.id,
+      'aria-haspopup': true,
+      'tabindex': 0
+    });
 
     if (this.options.fullScreen || this.$element.hasClass('full')) {
       this.options.fullScreen = true;
@@ -78,7 +67,7 @@ class Reveal {
     if(this.$overlay) {
       this.$element.detach().appendTo(this.$overlay);
     } else {
-      this.$element.detach().appendTo($('body'));
+      this.$element.detach().appendTo($(this.options.appendTo));
       this.$element.addClass('without-overlay');
     }
     this._events();
@@ -91,12 +80,10 @@ class Reveal {
    * Creates an overlay div to display behind the modal.
    * @private
    */
-  _makeOverlay(id) {
-    var $overlay = $('<div></div>')
-                    .addClass('reveal-overlay')
-                    .attr({'tabindex': -1, 'aria-hidden': true})
-                    .appendTo('body');
-    return $overlay;
+  _makeOverlay() {
+    return $('<div></div>')
+      .addClass('reveal-overlay')
+      .appendTo(this.options.appendTo);
   }
 
   /**
@@ -143,7 +130,12 @@ class Reveal {
 
     this.$element.on({
       'open.zf.trigger': this.open.bind(this),
-      'close.zf.trigger': this.close.bind(this),
+      'close.zf.trigger': (event, $element) => {
+        if ((event.target === _this.$element[0]) ||
+            ($(event.target).parents('[data-closable]')[0] === $element)) { // only close reveal when it's explicitly called
+          return this.close.apply(this);
+        }
+      },
       'toggle.zf.trigger': this.toggle.bind(this),
       'resizeme.zf.trigger': function() {
         _this._updatePosition();
@@ -162,7 +154,11 @@ class Reveal {
 
     if (this.options.closeOnClick && this.options.overlay) {
       this.$overlay.off('.zf.reveal').on('click.zf.reveal', function(e) {
-        if (e.target === _this.$element[0] || $.contains(_this.$element[0], e.target)) { return; }
+        if (e.target === _this.$element[0] ||
+          $.contains(_this.$element[0], e.target) ||
+            !$.contains(document, e.target)) {
+              return;
+        }
         _this.close();
       });
     }
@@ -217,6 +213,11 @@ class Reveal {
 
     if(this.$overlay) {
       this.$overlay.css({'visibility': ''}).hide();
+      if(this.$element.hasClass('fast')) {
+        this.$overlay.addClass('fast');
+      } else if (this.$element.hasClass('slow')) {
+        this.$overlay.addClass('slow');
+      }
     }
 
 
@@ -229,13 +230,39 @@ class Reveal {
       this.$element.trigger('closeme.zf.reveal', this.id);
     }
 
+    var _this = this;
+
+    function addRevealOpenClasses() {
+      if (_this.isMobile) {
+        if(!_this.originalScrollPos) {
+          _this.originalScrollPos = window.pageYOffset;
+        }
+        $('html, body').addClass('is-reveal-open');
+      }
+      else {
+        $('body').addClass('is-reveal-open');
+      }
+    }
     // Motion UI method of reveal
     if (this.options.animationIn) {
+      function afterAnimation(){
+        _this.$element
+          .attr({
+            'aria-hidden': false,
+            'tabindex': -1
+          })
+          .focus();
+        addRevealOpenClasses();
+        Foundation.Keyboard.trapFocus(_this.$element);
+      }
       if (this.options.overlay) {
         Foundation.Motion.animateIn(this.$overlay, 'fade-in');
       }
       Foundation.Motion.animateIn(this.$element, this.options.animationIn, () => {
-        this.focusableElements = Foundation.Keyboard.findFocusable(this.$element);
+        if(this.$element) { // protect against object having been removed
+          this.focusableElements = Foundation.Keyboard.findFocusable(this.$element);
+          afterAnimation();
+        }
       });
     }
     // jQuery method of reveal
@@ -253,6 +280,7 @@ class Reveal {
         'tabindex': -1
       })
       .focus();
+    Foundation.Keyboard.trapFocus(this.$element);
 
     /**
      * Fires when the modal has successfully opened.
@@ -260,17 +288,7 @@ class Reveal {
      */
     this.$element.trigger('open.zf.reveal');
 
-    if (this.isiOS) {
-      var scrollPos = window.pageYOffset;
-      $('html, body').addClass('is-reveal-open').scrollTop(scrollPos);
-    }
-    else {
-      $('body').addClass('is-reveal-open');
-    }
-
-    $('body')
-      .addClass('is-reveal-open')
-      .attr('aria-hidden', (this.options.overlay || this.options.fullScreen) ? true : false);
+    addRevealOpenClasses();
 
     setTimeout(() => {
       this._extraHandlers();
@@ -283,11 +301,14 @@ class Reveal {
    */
   _extraHandlers() {
     var _this = this;
+    if(!this.$element) { return; } // If we're in the middle of cleanup, don't freak out
     this.focusableElements = Foundation.Keyboard.findFocusable(this.$element);
 
     if (!this.options.overlay && this.options.closeOnClick && !this.options.fullScreen) {
       $('body').on('click.zf.reveal', function(e) {
-        if (e.target === _this.$element[0] || $.contains(_this.$element[0], e.target)) { return; }
+        if (e.target === _this.$element[0] ||
+          $.contains(_this.$element[0], e.target) ||
+            !$.contains(document, e.target)) { return; }
         _this.close();
       });
     }
@@ -310,24 +331,6 @@ class Reveal {
       var $target = $(this);
       // handle keyboard event with keyboard util
       Foundation.Keyboard.handleKey(e, 'Reveal', {
-        tab_forward: function() {
-          if (_this.$element.find(':focus').is(_this.focusableElements.eq(-1))) { // left modal downwards, setting focus to first element
-            _this.focusableElements.eq(0).focus();
-            e.preventDefault();
-          }
-          if (_this.focusableElements.length === 0) { // no focusable elements inside the modal at all, prevent tabbing in general
-            e.preventDefault();
-          }
-        },
-        tab_backward: function() {
-          if (_this.$element.find(':focus').is(_this.focusableElements.eq(0)) || _this.$element.is(':focus')) { // left modal upwards, setting focus to last element
-            _this.focusableElements.eq(-1).focus();
-            e.preventDefault();
-          }
-          if (_this.focusableElements.length === 0) { // no focusable elements inside the modal at all, prevent tabbing in general
-            e.preventDefault();
-          }
-        },
         open: function() {
           if (_this.$element.find(':focus').is(_this.$element.find('[data-close]'))) {
             setTimeout(function() { // set focus back to anchor if close button has been activated
@@ -341,6 +344,11 @@ class Reveal {
           if (_this.options.closeOnEsc) {
             _this.close();
             _this.$anchor.focus();
+          }
+        },
+        handled: function(preventDefault) {
+          if (preventDefault) {
+            e.preventDefault();
           }
         }
       });
@@ -393,17 +401,19 @@ class Reveal {
     this.$element.off('keydown.zf.reveal');
 
     function finishUp() {
-      if (_this.isiOS) {
+      if (_this.isMobile) {
         $('html, body').removeClass('is-reveal-open');
+        if(_this.originalScrollPos) {
+          $('body').scrollTop(_this.originalScrollPos);
+          _this.originalScrollPos = null;
+        }
       }
       else {
         $('body').removeClass('is-reveal-open');
       }
 
-      $('body').attr({
-        'aria-hidden': false,
-        'tabindex': ''
-      });
+
+      Foundation.Keyboard.releaseFocus(_this.$element);
 
       _this.$element.attr('aria-hidden', true);
 
@@ -425,7 +435,7 @@ class Reveal {
     this.isActive = false;
      if (_this.options.deepLink) {
        if (window.history.replaceState) {
-         window.history.replaceState("", document.title, window.location.pathname);
+         window.history.replaceState('', document.title, window.location.href.replace(`#${this.id}`, ''));
        } else {
          window.location.hash = '';
        }
@@ -450,7 +460,7 @@ class Reveal {
    */
   destroy() {
     if (this.options.overlay) {
-      this.$element.appendTo($('body')); // move $element outside of $overlay to prevent error unregisterPlugin()
+      this.$element.appendTo($(this.options.appendTo)); // move $element outside of $overlay to prevent error unregisterPlugin()
       this.$overlay.hide().off().remove();
     }
     this.$element.hide().off();
@@ -545,7 +555,14 @@ Reveal.defaults = {
    * @option
    * @example false
    */
-  deepLink: false
+  deepLink: false,
+    /**
+   * Allows the modal to append to custom div.
+   * @option
+   * @example false
+   */
+  appendTo: "body"
+
 };
 
 // Window exports
@@ -553,6 +570,14 @@ Foundation.plugin(Reveal, 'Reveal');
 
 function iPhoneSniff() {
   return /iP(ad|hone|od).*OS/.test(window.navigator.userAgent);
+}
+
+function androidSniff() {
+  return /Android/.test(window.navigator.userAgent);
+}
+
+function mobileSniff() {
+  return iPhoneSniff() || androidSniff();
 }
 
 }(jQuery);

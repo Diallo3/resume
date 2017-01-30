@@ -19,6 +19,9 @@ typography:
 button:
   sass: button
 
+card:
+  sass: card
+
 forms:
   sass: forms
 
@@ -85,9 +88,9 @@ dropdown_menu:
 
 equalizer:
   js: equalizer
-
-flex_video:
-  sass: flex-video
+  js_utils:
+    - mediaQuery
+    - timerAndImageLoader
 
 interchange:
   js: interchange
@@ -108,6 +111,9 @@ media_object:
 
 menu:
   sass: menu
+
+menu_icon:
+  sass: menu-icon
 
 off_canvas:
   sass: off-canvas
@@ -131,6 +137,9 @@ progress_bar:
 progress_element:
   sass: progress-element
 
+responsive_embed:
+  sass: responsive-embed
+
 responsive_menu:
   js: responsiveMenu
   js_utils:
@@ -153,6 +162,7 @@ slider:
     - motion
     - triggers
     - mediaQuery
+    - keyboard
 
 sticky:
   sass: sticky
@@ -160,6 +170,9 @@ sticky:
   js_utils:
     - triggers
     - mediaQuery
+
+responsive_accordion_tabs:
+  js: zf.responsiveAccordionTabs
 
 reveal:
   sass: reveal
@@ -169,6 +182,7 @@ reveal:
     - motion
     - triggers
     - mediaQuery
+    - keyboard
 
 switch:
   sass: switch

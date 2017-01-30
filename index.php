@@ -1,32 +1,22 @@
-<?php get_header(); ?>
-			
-	<div id="content">
-	
-		<div id="inner-content" class="row">
-	
-		    <main id="main" class="large-8 medium-8 columns" role="main">
-		    
-			    <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
-			 
-					<!-- To see additional archive styles, visit the /parts directory -->
-					<?php get_template_part( 'parts/loop', 'archive' ); ?>
-				    
-				<?php endwhile; ?>	
+<?php
+/**
+ * The main template file
+ * E.g., it puts together the home page when no home.php file exists
+ *
+ * @package  OpusWP
+ * @subpackage  Templates
+ * @since   3.0
+ */
 
-					<?php joints_page_navi(); ?>
-					
-				<?php else : ?>
-											
-					<?php get_template_part( 'parts/content', 'missing' ); ?>
-						
-				<?php endif; ?>
-																								
-		    </main> <!-- end #main -->
-		    
-		    <?php get_sidebar(); ?>
-
-		</div> <!-- end #inner-content -->
-
-	</div> <!-- end #content -->
-
-<?php get_footer(); ?>
+	if ( ! class_exists( 'Timber' ) ) {
+		echo 'Timber not activated. Make sure you activate the plugin in <a href="/wp-admin/plugins.php#timber">/wp-admin/plugins.php</a>';
+		return;
+	}
+	$context = Timber::get_context();
+	$context['posts'] = Timber::get_posts();
+	$templates = array( 'index.twig' );
+	if ( is_home() ) {
+		array_unshift( $templates, 'front-page.twig', 'home.twig' );
+	}
+	Timber::render( $templates, $context );
+?>

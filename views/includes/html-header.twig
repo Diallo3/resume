@@ -1,0 +1,48 @@
+<!doctype html>
+
+	<html class="no-js" {{site.language_attributes}}>
+
+	<head>
+		<meta charset="utf-8">
+		
+		{# Force IE to use the latest rendering engine available #}
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+		{#  Mobile Meta #}
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta class="foundation-mq">
+		
+		{# page titles #}
+		<title>
+			{% block pageTitle %}
+		        {% if wp_title %}
+		            {{ wp_title }} - {{ site.name }}
+		        {% else %}
+		            {{ site.name }}
+		        {% endif %}
+	        {% endblock %} 
+    	</title>
+    	<meta name="description" content="{{site.description}}">
+		
+		{# If Site Icon isn't set in customizer #}
+		{% if ( function('has_site_icon') | length > 0 ) or ( function('has_site_icon') | length > 0 ) %}
+		
+			<!-- Icons & Favicons -->
+			<link rel="icon" href="{{theme.link}}/favicon.png">
+			<link href="{{theme.link}}/assets/images/apple-icon-touch.png" rel="apple-touch-icon" />
+			<!--[if IE]>
+				<link rel="shortcut icon" href="{{theme.link}}/favicon.ico">
+			<![endif]-->
+			<meta name="msapplication-TileColor" content="#f01d4f">
+			<meta name="msapplication-TileImage" content="{{theme.link}}/assets/images/win8-tile-icon.png">
+	    	<meta name="theme-color" content="#121212">
+	    {% endif %}
+
+		<link rel="pingback" href="{{site.pingback_url }}">
+
+		{{function('wp_head')}}
+
+		<!-- Drop Google Analytics here -->
+		<!-- end analytics -->
+
+	

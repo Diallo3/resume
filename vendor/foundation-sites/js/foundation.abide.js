@@ -29,7 +29,7 @@ class Abide {
    * @private
    */
   _init() {
-    this.$inputs = this.$element.find('input, textarea, select').not('[data-abide-ignore]');
+    this.$inputs = this.$element.find('input, textarea, select');
 
     this._events();
   }
@@ -62,6 +62,14 @@ class Abide {
           this.validateInput($(e.target));
         });
     }
+
+    if (this.options.validateOnBlur) {
+      this.$inputs
+        .off('blur.zf.abide')
+        .on('blur.zf.abide', (e) => {
+          this.validateInput($(e.target));
+        });
+    }
   }
 
   /**
@@ -83,6 +91,10 @@ class Abide {
     var isGood = true;
 
     switch ($el[0].type) {
+      case 'checkbox':
+        isGood = $el[0].checked;
+        break;
+
       case 'select':
       case 'select-one':
       case 'select-multiple':
@@ -238,6 +250,11 @@ class Abide {
         validator = $el.attr('data-validator'),
         equalTo = true;
 
+    // don't validate ignored inputs or hidden inputs
+    if ($el.is('[data-abide-ignore]') || $el.is('[type="hidden"]')) {
+      return true;
+    }
+
     switch ($el[0].type) {
       case 'radio':
         validated = this.validateRadio($el.attr('name'));
@@ -268,6 +285,19 @@ class Abide {
 
     var goodToGo = [clearRequire, validated, customValidator, equalTo].indexOf(false) === -1;
     var message = (goodToGo ? 'valid' : 'invalid') + '.zf.abide';
+
+    if (goodToGo) {
+      // Re-validate inputs that depend on this one with equalto
+      const dependentElements = this.$element.find(`[data-equalto="${$el.attr('id')}"]`);
+      if (dependentElements.length) {
+        let _this = this;
+        dependentElements.each(function() {
+          if ($(this).val()) {
+            _this.validateInput($(this));
+          }
+        });
+      }
+    }
 
     this[goodToGo ? 'removeErrorClasses' : 'addErrorClasses']($el);
 
@@ -353,19 +383,24 @@ class Abide {
     // If at least one radio in the group has the `required` attribute, the group is considered required
     // Per W3C spec, all radio buttons in a group should have `required`, but we're being nice
     var $group = this.$element.find(`:radio[name="${groupName}"]`);
-    var valid = false;
+    var valid = false, required = false;
 
-    // .attr() returns undefined if no elements in $group have the attribute "required"
-    if ($group.attr('required') === undefined) {
-      valid = true;
-    }
-
-    // For the group to be valid, at least one radio needs to be checked
+    // For the group to be required, at least one radio needs to be required
     $group.each((i, e) => {
-      if ($(e).prop('checked')) {
-        valid = true;
+      if ($(e).attr('required')) {
+        required = true;
       }
     });
+    if(!required) valid=true;
+
+    if (!valid) {
+      // For the group to be valid, at least one radio needs to be checked
+      $group.each((i, e) => {
+        if ($(e).prop('checked')) {
+          valid = true;
+        }
+      });
+    };
 
     return valid;
   }
@@ -398,7 +433,9 @@ class Abide {
     $(`.${opts.inputErrorClass}`, $form).not('small').removeClass(opts.inputErrorClass);
     $(`${opts.formErrorSelector}.${opts.formErrorClass}`).removeClass(opts.formErrorClass);
     $form.find('[data-abide-error]').css('display', 'none');
-    $(':input', $form).not(':button, :submit, :reset, :hidden, [data-abide-ignore]').val('').removeAttr('data-invalid');
+    $(':input', $form).not(':button, :submit, :reset, :hidden, :radio, :checkbox, [data-abide-ignore]').val('').removeAttr('data-invalid');
+    $(':input:radio', $form).not('[data-abide-ignore]').prop('checked',false).removeAttr('data-invalid');
+    $(':input:checkbox', $form).not('[data-abide-ignore]').prop('checked',false).removeAttr('data-invalid');
     /**
      * Fires when the form has been reset.
      * @event Abide#formreset
@@ -473,6 +510,13 @@ Abide.defaults = {
    * @example false
    */
   liveValidate: false,
+
+  /**
+   * Set to true to validate inputs on blur.
+   * @option
+   * @example false
+   */
+  validateOnBlur: false,
 
   patterns: {
     alpha : /^[a-zA-Z]+$/,

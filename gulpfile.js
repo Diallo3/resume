@@ -115,6 +115,7 @@ gulp.task('browsersync', function() {
 
     browserSync.init(files, {
 	    // Replace with URL of your local site
+      // proxy: local
 	    proxy: "http://127.0.0.1/resume/",
     });
     

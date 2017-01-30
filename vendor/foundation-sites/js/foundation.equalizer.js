@@ -5,6 +5,8 @@
 /**
  * Equalizer module.
  * @module foundation.equalizer
+ * @requires foundation.util.mediaQuery
+ * @requires foundation.util.timerAndImageLoader if equalizer contains images
  */
 
 class Equalizer {
@@ -34,10 +36,15 @@ class Equalizer {
 
     this.$watched = $watched.length ? $watched : this.$element.find('[data-equalizer-watch]');
     this.$element.attr('data-resize', (eqId || Foundation.GetYoDigits(6, 'eq')));
+	this.$element.attr('data-mutate', (eqId || Foundation.GetYoDigits(6, 'eq')));
 
     this.hasNested = this.$element.find('[data-equalizer]').length > 0;
     this.isNested = this.$element.parentsUntil(document.body, '[data-equalizer]').length > 0;
     this.isOn = false;
+    this._bindHandler = {
+      onResizeMeBound: this._onResizeMe.bind(this),
+      onPostEqualizedBound: this._onPostEqualized.bind(this)
+    };
 
     var imgs = this.$element.find('img');
     var tooSmall;
@@ -62,7 +69,27 @@ class Equalizer {
    */
   _pauseEvents() {
     this.isOn = false;
-    this.$element.off('.zf.equalizer resizeme.zf.trigger');
+    this.$element.off({
+      '.zf.equalizer': this._bindHandler.onPostEqualizedBound,
+      'resizeme.zf.trigger': this._bindHandler.onResizeMeBound,
+	  'mutateme.zf.trigger': this._bindHandler.onResizeMeBound
+    });
+  }
+
+  /**
+   * function to handle $elements resizeme.zf.trigger, with bound this on _bindHandler.onResizeMeBound
+   * @private
+   */
+  _onResizeMe(e) {
+    this._reflow();
+  }
+
+  /**
+   * function to handle $elements postequalized.zf.equalizer, with bound this on _bindHandler.onPostEqualizedBound
+   * @private
+   */
+  _onPostEqualized(e) {
+    if(e.target !== this.$element[0]){ this._reflow(); }
   }
 
   /**
@@ -73,11 +100,10 @@ class Equalizer {
     var _this = this;
     this._pauseEvents();
     if(this.hasNested){
-      this.$element.on('postequalized.zf.equalizer', function(e){
-        if(e.target !== _this.$element[0]){ _this._reflow(); }
-      });
+      this.$element.on('postequalized.zf.equalizer', this._bindHandler.onPostEqualizedBound);
     }else{
-      this.$element.on('resizeme.zf.trigger', this._reflow.bind(this));
+      this.$element.on('resizeme.zf.trigger', this._bindHandler.onResizeMeBound);
+	  this.$element.on('mutateme.zf.trigger', this._bindHandler.onResizeMeBound);
     }
     this.isOn = true;
   }
@@ -87,7 +113,7 @@ class Equalizer {
    * @private
    */
   _checkMQ() {
-    var tooSmall = !Foundation.MediaQuery.atLeast(this.options.equalizeOn);
+    var tooSmall = !Foundation.MediaQuery.is(this.options.equalizeOn);
     if(tooSmall){
       if(this.isOn){
         this._pauseEvents();
@@ -132,7 +158,10 @@ class Equalizer {
    * @private
    */
   _isStacked() {
-    return this.$watched[0].offsetTop !== this.$watched[1].offsetTop;
+    if (!this.$watched[0] || !this.$watched[1]) {
+      return true;
+    }
+    return this.$watched[0].getBoundingClientRect().top !== this.$watched[1].getBoundingClientRect().top;
   }
 
   /**
@@ -207,8 +236,8 @@ class Equalizer {
    * Changes the CSS height property of each child in an Equalizer parent to match the tallest by row
    * @param {array} groups - An array of heights of children within Equalizer container grouped by row with element,height and max as last child
    * @fires Equalizer#preequalized
-   * @fires Equalizer#preequalizedRow
-   * @fires Equalizer#postequalizedRow
+   * @fires Equalizer#preequalizedrow
+   * @fires Equalizer#postequalizedrow
    * @fires Equalizer#postequalized
    */
   applyHeightByRow(groups) {
@@ -225,7 +254,7 @@ class Equalizer {
       }
       /**
         * Fires before the heights per row are applied
-        * @event Equalizer#preequalizedRow
+        * @event Equalizer#preequalizedrow
         */
       this.$element.trigger('preequalizedrow.zf.equalizer');
       for (var j = 0, lenJ = (groupsILength-1); j < lenJ ; j++) {
@@ -233,7 +262,7 @@ class Equalizer {
       }
       /**
         * Fires when the heights per row have been applied
-        * @event Equalizer#postequalizedRow
+        * @event Equalizer#postequalizedrow
         */
       this.$element.trigger('postequalizedrow.zf.equalizer');
     }
@@ -264,7 +293,7 @@ Equalizer.defaults = {
    * @option
    * @example true
    */
-  equalizeOnStack: true,
+  equalizeOnStack: false,
   /**
    * Enable height equalization row by row.
    * @option

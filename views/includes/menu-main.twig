@@ -1,0 +1,10 @@
+{# menu main #}
+{% if header %}
+	<ul>
+	{% for item in header %}
+		<li class="{{item.classes | join(' ')}}">
+			<a href="{{item.get_link}}">{{item.title}}</a>
+		</li>
+	{% endfor %}
+	</ul>
+{% endif %}
