@@ -1,9 +1,9 @@
 {# menu main #}
-{% if header %}
+{% if pri %}
 	<ul>
-	{% for item in header %}
+	{% for item in pri.get_items %}
 		<li class="{{item.classes | join(' ')}}">
-			<a href="{{item.get_link}}">{{item.title}}</a>
+			<a href="{{item.get_path}}">{{item.title}}</a>
 		</li>
 	{% endfor %}
 	</ul>
