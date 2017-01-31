@@ -1,0 +1,206 @@
+/*--------------------------------
+  Breakpoints
+*/
+@mixin bp($media) {
+    @if $media == small {
+        @media only screen and (max-width: map-get($breakpoints,small) ) {
+            @content;
+        }
+    }
+    @else if $media == mediumDown {
+        @media all and (max-width: map-get($breakpoints,medium)) {
+            @content;
+        }
+    }
+    @else if $media == medium {
+        @media all and (min-width: (map-get($breakpoints,small)+1)) and (max-width: map-get($breakpoints,large)) {
+            @content;
+        }
+    }
+    @else if $media == mediumUp {
+        @media all and (min-width: (map-get($breakpoints,small)+1)) {
+            @content;
+        }
+    }
+    @else if $media == largeDown {
+        @media all and (max-width: map-get($breakpoints,large)) {
+            @content;
+        }
+    }
+    @else if $media == large {
+        @media all and (min-width: (map-get($breakpoints,large)+1) ) {
+            @content;
+        }
+    }
+}
+
+
+/*--------------------------------
+    Zero out
+*/
+@mixin zero-out {
+    margin: 0;
+    padding: 0;
+}
+
+/*--------------------------------
+	
+	Pseudo
+
+	Usage
+	div::after {
+	    @include pseudo;
+	    top: -1rem; left: -1rem;
+	    width: 1rem; height: 1rem;
+	}
+*/
+@mixin pseudo($display: block, $pos: absolute, $content: "") {
+    content: $content;
+    display: $display;
+    position: $pos;
+}
+
+/*--------------------------------
+
+    Usage
+   .foo {
+        @include width(1500px, 300px);
+    }
+
+    Output
+   .foo {
+        max-width: 1500px;
+        min-width: 300px;
+        width: 100%;
+   }
+*/
+@mixin width($min: null, $max: null, $width: 100%) {
+  @if $max != null {
+    max-width: $max;
+  }
+  @if $min != null {
+    min-width: $min;
+  }
+  width: $width;
+}
+
+
+/*--------------------------------
+	Vertical Align
+*/
+@mixin vertical-align {
+    position: relative;
+    top: 50%;
+
+    -webkit-transform: translateY(-50%) !important;
+        -ms-transform: translateY(-50%) !important;
+            transform: translateY(-50%) !important;
+}
+
+
+/*--------------------------------
+	Center Block
+*/
+@mixin center-block {
+    margin-right: auto;
+    margin-left: auto;
+    display: block;
+}
+
+/*--------------------------------
+	Absolute Positioning
+*/
+@mixin abs-pos ($t: auto, $r: auto, $b: auto, $l: auto) {
+    margin: auto;
+    position: absolute;
+    top: $t;
+    right: $r;
+    bottom: $b;
+    left: $l;
+}
+
+/*--------------------------------
+  Center Align
+*/
+@mixin center-align($ver: true, $hor: false, $pos: relative) {
+    @if $pos {
+        position: $pos;
+    }
+    @if $ver {
+        top: 50%;
+    }
+    @if $hor {
+        left: 50%;
+    }
+
+    @if $ver and $hor {
+        transform: translateX(-50%) translateY(-50%);
+    } @else if $ver {
+
+        transform: translateY(-50%);
+    } @else {
+
+        transform: translateX(-50%);
+    }
+}
+
+@mixin center($xy:xy) {
+    @if $xy == xy {
+        left: 50%;
+        top: 50%;
+        bottom: auto;
+        right: auto;
+        @include transform(translateX(-50%) translateY(-50%));
+    }
+    @else if $xy == x {
+        left: 50%;
+        right: auto;
+        @include transform(translateX(-50%));
+    }
+     @else if $xy == y {
+        top: 50%;
+        bottom: auto;
+        @include transform(translateY(-50%));
+    }
+}
+
+/*--------------------------------
+    Menu list
+*/
+@mixin flat-list {
+    @include zero_out();
+    list-style-type: none;
+    li {
+        float: none;
+        position: relative;
+    }
+}
+
+@mixin menu-list($float: left, $margin: 0, $padding: 0, $li-float: left, $li-margin: 0, $li-padding: 0) {
+    @include zero-out;
+    list-style-type: none;
+    margin: $margin;
+    padding: $padding;
+    float: $float;
+    position: relative;
+    li {
+        margin: $li-margin;
+        padding: $li-padding;
+        float: $li-float;
+        position: relative;
+        display: inline;
+        &:last-child {
+            margin-right: 0; 
+        }
+    }
+}
+
+/*--------------------------------
+    Center list
+*/
+@mixin centered-list {
+    left: 50%;
+    li {
+        right: 50%;
+    }
+}

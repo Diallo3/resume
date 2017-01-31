@@ -1,0 +1,155 @@
+ /*--------------------------------
+
+ 	Usage
+   	@include font-face('Ubuntu', '../fonts');
+   	
+ 	Output CSS
+   	@font-face {
+    	font-family: 'Ubuntu';
+     	src: url('../fonts.eot');
+     	src: url('../fonts.eot?#iefix') format('embedded-opentype'),
+        	url('../fonts.woff2') format('woff2'),
+          	url('../fonts.woff') format('woff'),
+          	url('../fonts.ttf') format('truetype'),
+          	url('../fonts.svg#Ubuntu) format('svg');
+     	font-weight: 400;
+     	font-style: normal;
+   	}
+
+   	@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    	@font-face {
+       		font-family: 'Ubuntu';
+       		src: url('../fonts.svg#Ubuntu') format('svg');
+     	}
+   	}
+*/
+@mixin font-face($font-family, $file-path, $font-weight: 400, $font-style: normal) {
+	@font-face {
+        font-family: $font-family;
+        src: url('#{$file-path}/#{$font-family}.eot');
+        src: url('#{$file-path}/#{$font-family}.eot?#iefix') format('embedded-opentype'),
+             url('#{$file-path}/#{$font-family}.woff2') format('woff2'),
+             url('#{$file-path}/#{$font-family}.woff') format('woff'),
+             url('#{$file-path}/#{$font-family}.ttf') format('truetype'),
+             url('#{$file-path}/#{$font-family}.svg##{$font-family}') format('svg');
+        font-weight: $font-weight;
+        font-style: $font-style;
+    }
+
+    // Chrome for Windows rendering fix: http://www.adtrak.co.uk/blog/font-face-chrome-rendering/
+    @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        @font-face {
+            font-family: $font-family;
+            src: url('#{$file-path}/#{$font-family}.svg##{$font-family}') format('svg');
+        }
+    }
+}
+
+
+
+/*--------------------------------
+	Antialiased
+*/
+@mixin antialias {
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/*--------------------------------
+
+	Font Size with rem
+	
+	Usage
+	p {
+	  @include font-size-ext(14px)
+	}
+
+	Output
+	p {
+	  font-size: 14px; //Will be overridden if browser supports rem
+	  font-size: 0.8rem;
+	}
+
+----------------------------------*/
+
+@mixin font-size-ext($sizeValue: 16 ){
+    font-size: $sizeValue + px; //fallback for old browsers
+    font-size: (.07 * $sizeValue) + rem;
+}
+
+/*--------------------------------
+
+	Line-height values in both pixels and rems
+
+	Usage
+  	.foo {
+    	@include line-height(16);
+  	}
+
+	Output
+  	.foo {
+	    line-height: 16px;
+	    line-height: 1rem;
+  	}
+*/
+@mixin line-height($height-value: 12) {
+    line-height: $height-value * 1px; //fallback for old browsers
+    line-height: (1 / ($base-font-size / ($base-font-size * 0 + 1)) * $height-value * 1rem);
+}
+
+/*--------------------------------
+  Headings
+*/
+@mixin headings($from: 1, $to: 6){
+    @for $i from $from through $to{
+      h#{$i}{
+        @content
+      }
+    }
+}
+
+/*--------------------------------
+  Hide text
+  example:
+  .element {
+    @include hide-text;
+  }
+*/
+
+@mixin hide-text($break: false, $indent: 200%, $align: left, $overflow: hidden) {
+  @if $break {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+  }
+  text: {
+    indent: $indent;
+    align: $align;
+  }
+  font-size: 0;
+  white-space: nowrap;
+  @if $overflow {
+    overflow: $overflow;
+  }
+}
+
+/*--------------------------------
+
+	Usage
+   .foo {
+    	@include word-wrap();
+   	}
+
+ 	Output
+   .foo {
+    	hyphens: auto;
+    	overflow-wrap: break-word;
+    	word-wrap: break-word;
+   }
+*/
+@mixin word-wrap {
+  hyphens: auto;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}

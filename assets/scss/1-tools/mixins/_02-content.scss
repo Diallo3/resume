@@ -1,0 +1,151 @@
+/*--------------------------------
+	Clearfix
+*/
+@mixin clearfix() {
+    &:before,
+    &:after {
+        content: "";
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
+}
+
+/*--------------------------------
+	Hide from both screenreaders and browsers
+*/
+
+@mixin hidden {
+	display: none;
+	visibility: hidden;
+}
+
+@mixin visible($state: 'block') {
+	display: unquote($state);
+	visibility: visible;
+}
+
+
+/*--------------------------------
+	Hide only visually, but have it available for screenreaders
+*/
+
+@mixin vh($focusable: false) {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+
+	@if $focusable {
+		@include vh-focusable;
+	}
+}
+
+@mixin vh-reset {
+    clip: auto;
+	height: auto;
+	margin: 0;
+	overflow: visible;
+	position: static;
+	width: auto;
+}
+
+
+/*--------------------------------
+	Allow the element to be focusable when navigated to via the keyboard
+*/
+
+@mixin vh-focusable {
+	&:active,
+	&:focus {
+		clip: auto;
+		height: auto;
+		margin: 0;
+		overflow: visible;
+		position: static;
+		width: auto;
+	}
+}
+
+
+/*--------------------------------
+	Hide visually and from screenreaders, but maintain layout
+*/
+
+@mixin invisible {
+	visibility: hidden;
+}
+
+/*--------------------------------
+
+	Form input placeholder text
+	example:
+	input,
+	textarea {
+		@include input-placeholder {
+			color: $grey;
+		}
+	}
+
+*/
+
+@mixin input-placeholder {
+    &.placeholder { @content; }
+	&:-moz-placeholder { @content; }
+	&::-moz-placeholder { @content; }
+	&:-ms-input-placeholder { @content; }
+	&::-webkit-input-placeholder { @content; }
+}
+
+/*--------------------------------
+	Fluid Property
+	http://www.adrenalinmedia.com.au/the-agency/insights/this-changes-everything-css-fluid-properties.aspx
+	HTML:
+	<h1 class="element">
+		<span>Text to replace</span>
+	</h1>
+	example:
+	h1 {
+		@include fp(font-size, 50, 100); // 50px at 320, 100px at 1920;
+	}
+	output:
+	h1 {
+		font-size: calc(3.125vw + 40px); //This is the magic!
+	}
+	@media (max-width:320px){ //Clips the start to the min value
+		font-size:50px;
+	}
+	@media (min-width:1920px){ //Clips the end to the max value
+		font-size:100px;
+	}
+*/
+
+@mixin fp($property, $min, $max, $start: 320, $end: breakpoint('desktop'), $clip: true, $clipAtStart: true, $clipAtEnd: true) {
+	$start: $start / ($start * 0 + 1);
+	$end: $end / ($end * 0 + 1);
+	$multiplier: ($max - $min) / ($end - $start) * 100;
+	$adder: ($min * $end - $max * $start) / ($end - $start);
+	$formula: calc(#{$multiplier + 0vw} + #{$adder + 0px});
+	@if $clip and $clipAtStart {
+		@media (max-width: #{$start + 0px}) {
+			#{$property}: $min + 0px;
+		}
+	}
+	@if $clip and $clipAtEnd {
+		@media (min-width: #{$end + 0px}) {
+			#{$property}: $max + 0px;
+		}
+	}
+	#{$property}: $formula;
+}
+
+//Use the best ampersand - http://simplebits.com/notebook/2008/08/14/ampersands-2/
+span.amp {
+  font-family: Baskerville,'Goudy Old Style',Palatino,'Book Antiqua',serif !important;
+  font-style: italic;
+}
